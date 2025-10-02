@@ -1,25 +1,48 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useContext, useState } from 'react';
+import { AuthContext, AuthProvider } from './contexts/AuthContext';
+import LoginForm from './components/Auth/LoginForm';
+import RegisterForm from './components/Auth/RegisterForm';
+import Header from './components/Header';
+import DonorDashboard from './components/Dashboard/DonorDashboard';
+import RequesterDashboard from './components/Dashboard/RequesterDashboard';
+import VolunteerDashboard from './components/Dashboard/VolunteerDashboard';
+import MapView from './components/MapView';
 
-function App() {
+const AppContent = () => {
+  const { user } = useContext(AuthContext);
+  const [showRegister, setShowRegister] = useState(false);
+
+  if (!user) {
+    return showRegister ? (
+      <RegisterForm switchToLogin={() => setShowRegister(false)} />
+    ) : (
+      <LoginForm switchToRegister={() => setShowRegister(true)} />
+    );
+  }
+
+  let dashboard;
+  if (user.role === 'donor') dashboard = <DonorDashboard />;
+  else if (user.role === 'requester') dashboard = <RequesterDashboard />;
+  else if (user.role === 'volunteer') dashboard = <VolunteerDashboard />;
+  else dashboard = <p>Unknown role</p>;
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className="app-container">
+      <Header />
+      <div className="dashboard-map">
+        <section className="dashboard">{dashboard}</section>
+        <section className="map">
+          <MapView />
+        </section>
+      </div>
     </div>
   );
-}
+};
+
+const App = () => (
+  <AuthProvider>
+    <AppContent />
+  </AuthProvider>
+);
 
 export default App;
